@@ -1,11 +1,13 @@
 package com.example.todolist.controller;
 
 import com.example.todolist.model.Habit;
+import com.example.todolist.model.HabitCompletion;
 import com.example.todolist.model.Todo;
 import com.example.todolist.model.User;
 import com.example.todolist.service.HabitService;
 import com.example.todolist.service.TodoService;
 import com.example.todolist.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,8 +16,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Controller
 public class TodoController {
@@ -112,7 +120,7 @@ public class TodoController {
         int startDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
         List<LocalDate> calendarDays = new ArrayList<>();
         
-        int dayOfWeekValue = startDayOfWeek == 7 ? 0 : startDayOfWeek;
+        int dayOfWeekValue = startDayOfWeek == 7 ? 0 : startDayOfWeek; // Adjust Sunday to be 0 for loop
         for (int i = 0; i < dayOfWeekValue; i++) {
             calendarDays.add(firstDayOfMonth.minusDays(dayOfWeekValue - i));
         }
@@ -130,19 +138,38 @@ public class TodoController {
         model.addAttribute("todos", todoService.findByUserId(currentUser.getId()));
         model.addAttribute("displayedMonth", displayedMonth);
         model.addAttribute("calendarDays", calendarDays);
+        model.addAttribute("newTodo", new Todo()); // Added for the edit modal
+
         return "calendar";
     }
 
-    // Reverted showHabitsPage method
     @GetMapping("/habits")
     public String showHabitsPage(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = userService.findByUsername(auth.getName());
+        List<Habit> habits = habitService.findByUserId(currentUser.getId());
         
+        LocalDate today = LocalDate.now();
+
+        Map<LocalDate, Long> completionsByDate = habits.stream()
+            .flatMap(habit -> habit.getCompletions().stream())
+            .filter(completion -> !completion.getCompletionDate().isAfter(today))
+            .collect(Collectors.groupingBy(HabitCompletion::getCompletionDate, Collectors.counting()));
+
+        Map<String, Long> weeklyChartData = IntStream.rangeClosed(0, 6).mapToObj(today::minusDays)
+            .sorted()
+            .collect(Collectors.toMap(
+                date -> date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.US),
+                date -> completionsByDate.getOrDefault(date, 0L),
+                (e1, e2) -> e1,
+                LinkedHashMap::new
+            ));
+
         model.addAttribute("username", auth.getName());
-        model.addAttribute("habits", habitService.findByUserId(currentUser.getId()));
+        model.addAttribute("habits", habits);
         model.addAttribute("newHabit", new Habit());
-        model.addAttribute("currentDate", LocalDate.now());
+        model.addAttribute("currentDate", today);
+        model.addAttribute("weeklyChartData", weeklyChartData);
 
         return "habits";
     }

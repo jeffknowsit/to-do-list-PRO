@@ -5,18 +5,49 @@
     <title>My Calendar</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
       .main-content { display: flex; flex-direction: column; }
       .calendar-nav { display: flex; justify-content: space-between; align-items: center; }
       .nav-btn { padding: 8px 16px; text-decoration: none; background-color: var(--background-color); color: var(--text-color); border-radius: 8px; font-weight: 500; flex-shrink: 0; }
-      .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: auto repeat(6, 1fr); gap: 5px; flex-grow: 1; min-height: 0; }
+      
+      .calendar-grid { 
+        display: grid; 
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: auto repeat(6, 1fr);
+        gap: 5px; 
+        flex-grow: 1;
+        min-height: 0;
+      }
       .calendar-header { font-weight: 600; text-align: center; padding-bottom: 10px; color: var(--text-secondary); }
-      .calendar-day { border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; min-height: 0; }
+      
+      .calendar-day { 
+        border: 1px solid var(--border-color); 
+        border-radius: 8px; 
+        padding: 8px; 
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
       .day-number { font-weight: 500; font-size: 14px; }
       .other-month .day-number { opacity: 0.4; }
+      
       .day-tasks-wrapper { margin-top: 5px; overflow-y: auto; flex-grow: 1; }
-      .calendar-task { background-color: #EBF4FF; color: #3182CE; padding: 5px; margin-top: 5px; border-radius: 4px; font-size: 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+      .calendar-task { 
+        background-color: #EBF4FF; color: #3182CE; 
+        padding: 5px; margin-top: 5px; border-radius: 4px;
+        font-size: 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+        cursor: pointer; transition: background-color 0.2s ease; border: none; width: 100%; display: block; text-align: left;
+      }
+      .calendar-task:hover { background-color: var(--primary-color); color: white; }
       html.dark-mode .calendar-task { background-color: #2c5282; color: #bee3f8; }
+      html.dark-mode .calendar-task:hover { background-color: var(--primary-hover); }
+
+      .modal-details p { color: var(--text-secondary); margin-bottom: 15px; }
+      .modal-details .meta { font-weight: 500; }
+      .modal-footer { margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px; }
+      .btn-danger { background-color: #E53E3E; }
+      .btn-danger:hover { background-color: #C53030; }
     </style>
 </head>
 <body>
@@ -66,16 +97,70 @@
                     <div class="day-number" th:text="${day.getDayOfMonth()}">1</div>
                     
                     <div class="day-tasks-wrapper">
-                        <div th:each="todo : ${todos}" 
+                        <button th:each="todo : ${todos}" 
                              th:if="${todo.dueDateTime != null AND todo.dueDateTime.toLocalDate().equals(day)}"
-                             class="calendar-task"
-                             th:text="${todo.title}">
-                        </div>
+                             class="calendar-task event-item"
+                             th:text="${todo.title}"
+                             th:data-id="${todo.id}"
+                             th:data-title="${todo.title}"
+                             th:data-description="${todo.description}"
+                             th:data-duedate="${todo.dueDateTime != null ? #temporals.format(todo.dueDateTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                             th:data-priority="${todo.priority}">
+                        </button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <div id="view-task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="view-task-title">Task Title</h2>
+            <div class="modal-details">
+                <p id="view-task-description">Description goes here.</p>
+                <p class="meta"><strong>Due:</strong> <span id="view-task-duedate">Date</span></p>
+                <p class="meta"><strong>Priority:</strong> <span id="view-task-priority">Priority</span></p>
+            </div>
+            <div class="modal-footer">
+                <a id="view-task-delete-btn" href="#" class="btn-primary btn-danger">Delete</a>
+                <button id="view-task-edit-btn" class="btn-primary">Edit</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="edit-task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Task</h2>
+            <form id="edit-task-form" th:action="@{/edit-todo}" method="post">
+                <input type="hidden" id="edit-todo-id" name="id" />
+                <div class="input-group">
+                    <label for="edit-title">Task Title</label>
+                    <input type="text" id="edit-title" name="title" required>
+                </div>
+                <div class="input-group">
+                    <label for="edit-description">Description</label>
+                    <textarea id="edit-description" name="description" rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="edit-dueDateTime">Due Date & Time</label>
+                    <input type="datetime-local" id="edit-dueDateTime" name="dueDateTime">
+                </div>
+                <div class="input-group">
+                    <label for="edit-priority">Priority</label>
+                    <select id="edit-priority" name="priority">
+                        <option value="0">None</option>
+                        <option value="1">Low</option>
+                        <option value="2">Medium</option>
+                        <option value="3">High</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
     <script th:src="@{/js/script.js}"></script>
 </body>
 </html>
