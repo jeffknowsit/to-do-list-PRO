@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Habits</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .inline-form { display: flex; gap: 10px; margin-bottom: 30px; }
+        .inline-form input { flex-grow: 1; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; background-color: var(--background-color); color: var(--text-color); }
+        .inline-form button { padding: 0 25px; width: auto;}
+        .habit-grid table { width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
+        .habit-grid th, .habit-grid td { text-align: center; padding: 15px; border-bottom: 1px solid var(--border-color); }
+        .habit-grid tr td { border-right: 1px solid var(--border-color); }
+        .habit-grid tr td:last-child { border-right: none; }
+        .habit-grid thead { background-color: var(--background-color); }
+        .habit-grid th { font-weight: 600; }
+        .habit-grid td:first-child { text-align: left; font-weight: 500; }
+        .completion-dot-form { display: inline-block; }
+        .completion-dot { width: 24px; height: 24px; border-radius: 50%; background-color: transparent; border: 2px solid var(--border-color); cursor: pointer; margin: 0 auto; transition: background-color 0.3s; padding: 0; }
+        .completion-dot.completed { background-color: var(--primary-color); border-color: var(--primary-color); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Hello, <span th:text="${username}">User</span>!</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a th:href="@{/dashboard}">Dashboard</a></li>
+                    <li><a th:href="@{/}">Tasks</a></li>
+                    <li><a th:href="@{/calendar}">Calendar</a></li>
+                    <li class="active"><a th:href="@{/habits}">Habits</a></li>
+                </ul>
+            </nav>
+             <div class="sidebar-footer">
+                <div class="theme-switch-wrapper">
+                    <span>Dark Mode</span>
+                    <label class="theme-switch" for="theme-checkbox">
+                        <input type="checkbox" id="theme-checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+                <a th:href="@{/logout}" class="logout-btn">Logout</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>My Habits</h1>
+            </header>
+
+            <section class="add-habit-form">
+                <form th:action="@{/add-habit}" th:object="${newHabit}" method="post" class="inline-form">
+                    <input type="text" th:field="*{name}" placeholder="Add a new habit (e.g., Read for 15 minutes)" required>
+                    <button type="submit" class="btn-primary">Add</button>
+                </form>
+            </section>
+            
+            <section class="habit-grid">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Habit</th>
+                            <th th:each="i : ${#numbers.sequence(6, 0, -1)}" th:text="${#temporals.dayOfWeekNameShort(currentDate.minusDays(i))}">Day</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="habit : ${habits}">
+                            <td th:text="${habit.name}">Habit Name</td>
+                            <td th:each="i : ${#numbers.sequence(6, 0, -1)}">
+                                <div th:with="loopDate=${currentDate.minusDays(i)}">
+                                    <form th:action="@{/habits/toggle}" method="post" class="completion-dot-form">
+                                        <input type="hidden" name="habitId" th:value="${habit.id}" />
+                                        <input type="hidden" name="date" th:value="${loopDate}" />
+                                        <button type="submit" class="completion-dot"
+                                                th:classappend="${habit.completions != null and !habit.completions.?[completionDate.equals(#loopDate)].empty} ? 'completed' : ''">
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

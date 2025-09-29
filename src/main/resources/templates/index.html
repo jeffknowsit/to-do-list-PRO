@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My To-Do List</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Hello, <span th:text="${username}">User</span>!</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a th:href="@{/dashboard}">Dashboard</a></li>
+                    <li class="active"><a th:href="@{/}">Tasks</a></li>
+                    <li><a th:href="@{/calendar}">Calendar</a></li>
+                    <li><a th:href="@{/habits}">Habits</a></li>
+                </ul>
+            </nav>
+             <div class="sidebar-footer">
+                <div class="theme-switch-wrapper">
+                    <span>Dark Mode</span>
+                    <label class="theme-switch" for="theme-checkbox">
+                        <input type="checkbox" id="theme-checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+                <a th:href="@{/logout}" class="logout-btn">Logout</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Today's Tasks</h1>
+                <button id="quick-add-btn" class="quick-add-btn">+</button>
+            </header>
+
+            <section class="search-container">
+                <input type="text" class="search-bar" placeholder="Search tasks...">
+            </section>
+            
+            <section class="filter-container">
+                <a th:href="@{/}" class="filter-btn" th:classappend="${activePriority == null} ? 'active' : ''">All</a>
+                <a th:href="@{/(priority=3)}" class="filter-btn high" th:classappend="${activePriority != null and activePriority == 3} ? 'active' : ''">High</a>
+                <a th:href="@{/(priority=2)}" class="filter-btn medium" th:classappend="${activePriority != null and activePriority == 2} ? 'active' : ''">Medium</a>
+                <a th:href="@{/(priority=1)}" class="filter-btn low" th:classappend="${activePriority != null and activePriority == 1} ? 'active' : ''">Low</a>
+            </section>
+
+            <section class="todo-list-container">
+                <div th:if="${todos.isEmpty()}">
+                    <p class="empty-state">You're all caught up! Add a new task to get started.</p>
+                </div>
+                <ul class="todo-list">
+                    <li th:each="todo : ${todos}"
+                        th:if="${todo != null}"
+                        class="todo-item" 
+                        th:classappend="${todo.completed ? 'completed' : ''} + ' ' + ${
+                            todo.priority == 3 ? 'high-priority' :
+                            (todo.priority == 2 ? 'medium-priority' :
+                            (todo.priority == 1 ? 'low-priority' : ''))
+                        }">
+                        
+                         <div class="todo-checkbox">
+                            <form th:action="@{/update-completion}" method="post" class="completion-form">
+                                <input type="hidden" name="id" th:value="${todo.id}" />
+                                <input type="checkbox" th:checked="${todo.completed}" onchange="this.form.submit()" 
+                                       name="completed" value="true"/>
+                            </form>
+                        </div>
+                        <div class="todo-details">
+                            <span class="todo-title" th:text="${todo.title}">Task Title</span>
+                            <p class="todo-description" th:if="${todo.description != null and !todo.description.isEmpty()}" th:text="${todo.description}"></p>
+                            <div class="todo-meta" th:if="${todo.dueDateTime != null}">
+                                <span class="todo-datetime" th:text="${#temporals.format(todo.dueDateTime, 'EEE, MMM dd, yyyy HH:mm')}"></span>
+                            </div>
+                        </div>
+                        <div class="todo-actions">
+                            <button class="btn-icon edit-btn" 
+                                    th:data-id="${todo.id}" th:data-title="${todo.title}"
+                                    th:data-description="${todo.description}"
+                                    th:data-duedate="${todo.dueDateTime != null ? #temporals.format(todo.dueDateTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                    th:data-priority="${todo.priority}">
+                                ✏️
+                            </button>
+                            <a th:href="@{/delete-todo/{id}(id=${todo.id})}" class="btn-icon">🗑️</a>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <div id="add-task-modal" class="modal"> </div>
+    <div id="edit-task-modal" class="modal"> </div>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

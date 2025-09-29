@@ -1,0 +1,196 @@
+/* Modern Todo List App Styles */
+
+:root {
+    --primary-color: #5A67D8; /* A modern, accessible blue/purple */
+    --primary-hover: #434190;
+    --background-color: #F7FAFC;
+    --sidebar-bg: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --text-color: #2D3748;
+    --text-secondary: #718096;
+    --border-color: #E2E8F0;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+
+    /* Priority Colors */
+    --priority-high: #E53E3E;   /* Red */
+    --priority-medium: #DD6B20; /* Orange */
+    --priority-low: #3182CE;    /* Blue */
+}
+
+html.dark-mode {
+    --primary-color: #7f8de6;
+    --primary-hover: #97a3f0;
+    --background-color: #1A202C;
+    --sidebar-bg: #1A202C;
+    --card-bg: #2D3748;
+    --text-color: #E2E8F0;
+    --text-secondary: #A0AEC0;
+    --border-color: #4A5568;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-size: 16px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.5rem; }
+
+/* Main App Layout */
+.app-container, .sidebar, .todo-item, .dashboard-card, .habit-card {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.app-container {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    height: 90vh;
+    max-height: 800px;
+    background: var(--sidebar-bg);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header h3 { font-weight: 600; }
+.sidebar-nav { margin-top: 40px; }
+.sidebar-nav ul { list-style: none; }
+.sidebar-nav li a {
+    display: block;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+.sidebar-nav li.active a, .sidebar-nav li a:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+.sidebar-footer { margin-top: auto; }
+
+.logout-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 10px 15px;
+    margin-top: 10px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+.logout-btn:hover { background-color: #fce8e8; color: #C62828;}
+html.dark-mode .logout-btn:hover { background-color: rgba(255, 0, 0, 0.1); }
+
+/* Theme Switch */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border-radius: 8px;
+}
+.theme-switch-wrapper span {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+.theme-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--primary-color); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+.main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.quick-add-btn {
+    position: static;
+    width: 36px; height: 36px; border-radius: 50%;
+    background-color: var(--primary-color); color: white;
+    border: none; font-size: 24px; cursor: pointer;
+    box-shadow: none; transition: transform 0.2s ease, background-color 0.2s ease;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: 15px; flex-shrink: 0;
+}
+.quick-add-btn:hover { background-color: var(--primary-hover); transform: scale(1.1); }
+
+/* Task Page: Search & Filter */
+.search-container { margin-bottom: 20px; }
+.search-bar { width: 100%; padding: 12px 20px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: var(--background-color); color: var(--text-color); }
+.filter-container { display: flex; gap: 10px; margin-bottom: 20px; }
+.filter-btn { padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 20px; background: var(--card-bg); color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: all 0.3s ease; }
+.filter-btn.active { color: #fff; border-color: var(--primary-color); background-color: var(--primary-color); }
+.filter-btn.high:hover { border-color: var(--priority-high); color: var(--priority-high); }
+.filter-btn.medium:hover { border-color: var(--priority-medium); color: var(--priority-medium); }
+.filter-btn.low:hover { border-color: var(--priority-low); color: var(--priority-low); }
+.filter-btn.high.active { background-color: var(--priority-high); border-color: var(--priority-high); }
+.filter-btn.medium.active { background-color: var(--priority-medium); border-color: var(--priority-medium); }
+.filter-btn.low.active { background-color: var(--priority-low); border-color: var(--priority-low); }
+
+/* Task Item */
+.todo-list { list-style: none; }
+.todo-item { display: flex; align-items: flex-start; padding: 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 15px; border-left: 6px solid transparent; }
+.todo-item:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.todo-item.high-priority { border-left-color: var(--priority-high); }
+.todo-item.medium-priority { border-left-color: var(--priority-medium); }
+.todo-item.low-priority { border-left-color: var(--priority-low); }
+.todo-checkbox { margin-right: 20px; }
+.todo-checkbox input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; margin-top: 2px; }
+.todo-details { flex-grow: 1; }
+.todo-title { font-weight: 600; display: block; margin-bottom: 5px; }
+.todo-description { color: var(--text-secondary); font-size: 14px; margin-bottom: 10px; }
+.todo-meta { font-size: 12px; color: #BDBDBD; }
+.todo-actions { margin-left: 20px; }
+.btn-icon { background: none; border: none; cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 18px; padding: 5px; }
+.empty-state { text-align: center; padding: 50px; color: var(--text-secondary); }
+
+/* Task Completion Animation */
+.todo-item.completed { opacity: 0.6; }
+.todo-item.completed .todo-title { text-decoration: none; background-image: linear-gradient(to right, var(--text-secondary), var(--text-secondary)); background-repeat: no-repeat; background-size: 0% 1px; background-position: 0 50%; animation: strike-through 0.5s forwards; }
+@keyframes strike-through { from { background-size: 0% 1px; } to { background-size: 100% 1px; } }
+
+/* Modals */
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+.modal-content { background-color: var(--card-bg); margin: 15% auto; padding: 30px; border: 1px solid var(--border-color); width: 90%; max-width: 500px; border-radius: 12px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 25px; }
+.close-btn:hover, .close-btn:focus { color: var(--text-color); text-decoration: none; cursor: pointer; }
+.input-group { margin-bottom: 20px; text-align: left; }
+.input-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
+.input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-family); font-size: 16px; background-color: var(--background-color); color: var(--text-color); }
+.btn-primary { width: 100%; padding: 14px; border: none; background-color: var(--primary-color); color: white; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
+.btn-primary:hover { background-color: var(--primary-hover); }
+
+/* Auth Pages */
+.auth-body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.auth-container { background: var(--card-bg); padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+.auth-switch { margin-top: 25px; font-size: 14px; }
+.auth-switch a { color: var(--primary-color); text-decoration: none; font-weight: 600; }

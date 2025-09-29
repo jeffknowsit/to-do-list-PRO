@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Calendar</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      .main-content { display: flex; flex-direction: column; }
+      .calendar-nav { display: flex; justify-content: space-between; align-items: center; }
+      .nav-btn { padding: 8px 16px; text-decoration: none; background-color: var(--background-color); color: var(--text-color); border-radius: 8px; font-weight: 500; flex-shrink: 0; }
+      .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: auto repeat(6, 1fr); gap: 5px; flex-grow: 1; min-height: 0; }
+      .calendar-header { font-weight: 600; text-align: center; padding-bottom: 10px; color: var(--text-secondary); }
+      .calendar-day { border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; min-height: 0; }
+      .day-number { font-weight: 500; font-size: 14px; }
+      .other-month .day-number { opacity: 0.4; }
+      .day-tasks-wrapper { margin-top: 5px; overflow-y: auto; flex-grow: 1; }
+      .calendar-task { background-color: #EBF4FF; color: #3182CE; padding: 5px; margin-top: 5px; border-radius: 4px; font-size: 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+      html.dark-mode .calendar-task { background-color: #2c5282; color: #bee3f8; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Hello, <span th:text="${username}">User</span>!</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a th:href="@{/dashboard}">Dashboard</a></li>
+                    <li><a th:href="@{/}">Tasks</a></li>
+                    <li class="active"><a th:href="@{/calendar}">Calendar</a></li>
+                    <li><a th:href="@{/habits}">Habits</a></li>
+                </ul>
+            </nav>
+             <div class="sidebar-footer">
+                <div class="theme-switch-wrapper">
+                    <span>Dark Mode</span>
+                    <label class="theme-switch" for="theme-checkbox">
+                        <input type="checkbox" id="theme-checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+                <a th:href="@{/logout}" class="logout-btn">Logout</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header calendar-nav">
+                <a class="nav-btn" th:href="@{/calendar(year=${displayedMonth.minusMonths(1).getYear()}, month=${displayedMonth.minusMonths(1).getMonthValue()})}">&lt; Prev</a>
+                <h1 th:text="${#temporals.format(displayedMonth, 'MMMM yyyy')}">Month Year</h1>
+                <a class="nav-btn" th:href="@{/calendar(year=${displayedMonth.plusMonths(1).getYear()}, month=${displayedMonth.plusMonths(1).getMonthValue()})}">Next &gt;</a>
+            </header>
+
+            <div class="calendar-grid">
+                <div class="calendar-header">Mon</div>
+                <div class="calendar-header">Tue</div>
+                <div class="calendar-header">Wed</div>
+                <div class="calendar-header">Thu</div>
+                <div class="calendar-header">Fri</div>
+                <div class="calendar-header">Sat</div>
+                <div class="calendar-header">Sun</div>
+                
+                <div th:each="day : ${calendarDays}" class="calendar-day" 
+                     th:classappend="${day.getMonthValue() != displayedMonth.getMonthValue()} ? 'other-month' : ''">
+                    <div class="day-number" th:text="${day.getDayOfMonth()}">1</div>
+                    
+                    <div class="day-tasks-wrapper">
+                        <div th:each="todo : ${todos}" 
+                             th:if="${todo.dueDateTime != null AND todo.dueDateTime.toLocalDate().equals(day)}"
+                             class="calendar-task"
+                             th:text="${todo.title}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .dashboard-card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: var(--shadow); }
+        .dashboard-card h3 { margin-bottom: 10px; }
+        .dashboard-card p { color: var(--text-secondary); font-size: 0.9rem; }
+        .chart-container { position: relative; height: 200px; margin-top: 20px; }
+        .streak-card { text-align: center; }
+        .streak-icon { font-size: 4rem; line-height: 1; margin-top: 20px; }
+        .streak-days { font-size: 2.5rem; font-weight: 700; color: var(--primary-color); margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Hello, <span th:text="${username}">User</span>!</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a th:href="@{/dashboard}">Dashboard</a></li>
+                    <li><a th:href="@{/}">Tasks</a></li>
+                    <li><a th:href="@{/calendar}">Calendar</a></li>
+                    <li><a th:href="@{/habits}">Habits</a></li>
+                </ul>
+            </nav>
+             <div class="sidebar-footer">
+                <div class="theme-switch-wrapper">
+                    <span>Dark Mode</span>
+                    <label class="theme-switch" for="theme-checkbox">
+                        <input type="checkbox" id="theme-checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+                <a th:href="@{/logout}" class="logout-btn">Logout</a>
+            </div>
+        </aside>
+    
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Your Progress</h1>
+            </header>
+            
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>Today's Completion</h3>
+                    <p>You've completed <span th:text="${stats.tasksCompletedToday}">0</span> of <span th:text="${stats.totalTasksForToday}">0</span> tasks today.</p>
+                    <div class="chart-container">
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                </div>
+                <div class="dashboard-card streak-card">
+                    <h3>Current Streak</h3>
+                    <div class="streak-icon">🔥</div>
+                    <div class="streak-days" th:text="${stats.streakDays} + ' Days'">0 Days</div>
+                    <p>Complete at least one task every day to keep it going!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+        // This script now runs after the main script.js, which handles the theme toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const stats = /*[[${stats}]]*/ {};
+            const themeToggle = document.getElementById('theme-checkbox');
+            let completionChart; // Make chart variable accessible in the wider scope
+
+            function renderCompletionChart() {
+                // Destroy the old chart instance if it exists, to prevent bugs
+                if (completionChart) {
+                    completionChart.destroy();
+                }
+
+                const isDarkMode = document.documentElement.classList.contains('dark-mode');
+                
+                // Define colors based on the current theme
+                const completedColor = isDarkMode ? '#7f8de6' : '#5A67D8'; // Dark and light primary colors
+                const remainingColor = isDarkMode ? '#4A5568' : '#E2E8F0'; // Dark and light border colors
+                
+                const completionPercentage = stats.completionPercentage;
+                const remainingPercentage = 100 - completionPercentage;
+
+                const ctx = document.getElementById('completionChart').getContext('2d');
+                completionChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [completionPercentage, remainingPercentage > 0 ? remainingPercentage : 0.001],
+                            backgroundColor: [completedColor, remainingColor],
+                            borderColor: 'transparent',
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+            }
+
+            // Initial render on page load
+            renderCompletionChart();
+
+            // Re-render the chart whenever the theme toggle is clicked
+            if (themeToggle) {
+                themeToggle.addEventListener('change', renderCompletionChart);
+            }
+        });
+    /*]]>*/
+    </script>
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
